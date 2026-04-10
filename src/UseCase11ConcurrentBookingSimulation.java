@@ -1,6 +1,6 @@
 import java.util.Scanner;
 
-class UseCase9ErrorHandlingValidation {
+class UseCase11ConcurrentBookingSimulation {
 
     public static void welcomeMessage() {
         System.out.println("=================================================");
@@ -142,7 +142,53 @@ class UseCase9ErrorHandlingValidation {
         cancellationService.showRollbackHistory();
 
         // Show updated inventory
-        System.out.println("\nUpdated Single Room Availability: "
-                + inventory.getRoomAvailability().get("SingleRoom"));
+        System.out.println("\nUpdated Single Room Availability: " + inventory.getRoomAvailability().get("SingleRoom"));
+
+        System.out.println("\nConcurrent Booking Simulation\n");
+
+        // Create fresh inventory (small values to see effect)
+        RoomInventory inventory2 = new RoomInventory();
+        inventory2.updateAvailability("SingleRoom", 2);
+        inventory2.updateAvailability("DoubleRoom", 1);
+        inventory2.updateAvailability("SuiteRoom", 1);
+
+        // Shared queue
+        BookingRequestQueue bookingQueue3 = new BookingRequestQueue();
+
+        bookingQueue3.addRequest(new Reservation("Abhi", "SingleRoom"));
+        bookingQueue3.addRequest(new Reservation("Vanmathi", "DoubleRoom"));
+        bookingQueue3.addRequest(new Reservation("Kural", "SuiteRoom"));
+        bookingQueue3.addRequest(new Reservation("Subha", "SingleRoom"));
+
+        // Shared allocation service
+        RoomAllocationService allocationService2 = new RoomAllocationService();
+
+        // Create threads
+        Thread t1 = new Thread(
+                new ConcurrentBookingProcessor(bookingQueue3, inventory2, allocationService2)
+        );
+
+        Thread t2 = new Thread(
+                new ConcurrentBookingProcessor(bookingQueue3, inventory2, allocationService2)
+        );
+
+        // Start threads
+        t1.start();
+        t2.start();
+
+        // Wait for completion
+        try {
+            t1.join();
+            t2.join();
+        } catch (InterruptedException e) {
+            System.out.println("Thread execution interrupted.");
+        }
+
+        // Show remaining inventory
+        System.out.println("\nRemaining Inventory:");
+        System.out.println("Single: " + inventory2.getRoomAvailability().get("SingleRoom"));
+        System.out.println("Double: " + inventory2.getRoomAvailability().get("DoubleRoom"));
+        System.out.println("Suite: " + inventory2.getRoomAvailability().get("SuiteRoom"));
+
     }
 }
