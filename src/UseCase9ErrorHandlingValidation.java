@@ -126,5 +126,23 @@ class UseCase9ErrorHandlingValidation {
         } finally {
             scanner.close();
         }
+
+        System.out.println("\nBooking Cancellation\n");
+
+        CancellationService cancellationService = new CancellationService();
+
+        // Register booking (from allocation)
+        String cancelReservationId = "Single-1";
+        cancellationService.registerBooking(cancelReservationId, "SingleRoom");
+
+        // Cancel booking
+        cancellationService.cancelBooking(cancelReservationId, inventory);
+
+        // Show rollback history
+        cancellationService.showRollbackHistory();
+
+        // Show updated inventory
+        System.out.println("\nUpdated Single Room Availability: "
+                + inventory.getRoomAvailability().get("SingleRoom"));
     }
 }
