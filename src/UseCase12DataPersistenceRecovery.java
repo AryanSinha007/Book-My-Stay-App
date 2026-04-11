@@ -1,6 +1,6 @@
 import java.util.Scanner;
 
-class UseCase11ConcurrentBookingSimulation {
+class UseCase12DataPersistenceRecovery {
 
     public static void welcomeMessage() {
         System.out.println("=================================================");
@@ -9,7 +9,7 @@ class UseCase11ConcurrentBookingSimulation {
         System.out.println("Find and book the perfect stay for your trip!");
         System.out.println();
         System.out.println("Author: Harshal");
-        System.out.println("Version: 9.1");
+        System.out.println("Version: 12.1");
         System.out.println("-------------------------------------------------");
         System.out.println("            Hotel Room Inventory Status");
 
@@ -165,12 +165,10 @@ class UseCase11ConcurrentBookingSimulation {
 
         // Create threads
         Thread t1 = new Thread(
-                new ConcurrentBookingProcessor(bookingQueue3, inventory2, allocationService2)
-        );
+                new ConcurrentBookingProcessor(bookingQueue3, inventory2, allocationService2));
 
         Thread t2 = new Thread(
-                new ConcurrentBookingProcessor(bookingQueue3, inventory2, allocationService2)
-        );
+                new ConcurrentBookingProcessor(bookingQueue3, inventory2, allocationService2));
 
         // Start threads
         t1.start();
@@ -190,5 +188,33 @@ class UseCase11ConcurrentBookingSimulation {
         System.out.println("Double: " + inventory2.getRoomAvailability().get("DoubleRoom"));
         System.out.println("Suite: " + inventory2.getRoomAvailability().get("SuiteRoom"));
 
+        System.out.println("\nSystem Recovery\n");
+
+
+        System.out.println("\nSystem Recovery\n");
+
+        FilePersistenceService persistenceService = new FilePersistenceService();
+        String filePath = "inventory.txt";
+
+// 🔹 DEBUG: Show state before saving
+        System.out.println("Saving Inventory State:");
+        System.out.println("Single: " + inventory2.getRoomAvailability().getOrDefault("SingleRoom", 0));
+        System.out.println("Double: " + inventory2.getRoomAvailability().getOrDefault("DoubleRoom", 0));
+        System.out.println("Suite: " + inventory2.getRoomAvailability().getOrDefault("SuiteRoom", 0));
+
+// 🔹 Save latest inventory (after concurrent processing)
+        persistenceService.saveInventory(inventory2, filePath);
+
+// 🔹 Create new object to simulate system restart
+        RoomInventory recoveredInventory = new RoomInventory();
+
+// 🔹 Load from file into new object
+        persistenceService.loadInventory(recoveredInventory, filePath);
+
+// 🔹 Show recovered inventory
+        System.out.println("\nRecovered Inventory After System Restart:");
+        System.out.println("Single: " + recoveredInventory.getRoomAvailability().getOrDefault("SingleRoom", 0));
+        System.out.println("Double: " + recoveredInventory.getRoomAvailability().getOrDefault("DoubleRoom", 0));
+        System.out.println("Suite: " + recoveredInventory.getRoomAvailability().getOrDefault("SuiteRoom", 0));
     }
 }
